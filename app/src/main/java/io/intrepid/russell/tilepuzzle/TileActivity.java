@@ -205,11 +205,12 @@ class TileAdapter extends RecyclerView.Adapter<TileAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.itemView.setClickable(mStarted);
         int value = mValues.get(position);
         if (value == mMissingValue) {
-            holder.image.setImageResource(android.R.color.black);
+            holder.itemView.setClickable(false);
+            holder.image.setImageResource(android.R.color.transparent);
         } else {
+            holder.itemView.setClickable(mStarted);
             holder.image.setImageBitmap(mTiles[value]);
         }
     }
