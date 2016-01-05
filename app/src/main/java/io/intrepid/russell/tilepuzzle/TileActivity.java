@@ -3,6 +3,7 @@ package io.intrepid.russell.tilepuzzle;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
@@ -23,7 +24,7 @@ public class TileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tile);
 
-        int size = 3; // TODO make this an input parameter
+        int size = 4; // TODO make this an input parameter
 
         Bitmap raw = decodeSampledBitmapFromResource(getResources(), R.raw.bruce, 500, 500); // TODO make this size real
         Bitmap[] tiles = generateTiles(raw, size);
@@ -106,6 +107,8 @@ class TileAdapter extends RecyclerView.Adapter<TileAdapter.ViewHolder> {
     final List<Integer> mValues;
     final Bitmap[] mTiles;
 
+    boolean mStarted = false;
+
     class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         ImageView image;
 
@@ -170,9 +173,28 @@ class TileAdapter extends RecyclerView.Adapter<TileAdapter.ViewHolder> {
         for (int i = 0; i < mSize * mSize; i++) {
             mValues.add(i);
         }
-        Collections.shuffle(mValues); // TODO sane shuffling that ensures solvability
 
         mMissingValue = size * size - 1;
+
+        new AsyncTask<Void, Void, Void>() {
+
+            @Override
+            protected Void doInBackground(Void... params) {
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                Collections.shuffle(mValues); // TODO shuffle better
+                mStarted = true;
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void param) {
+                notifyDataSetChanged();
+            }
+        }.execute();
     }
 
     @Override
@@ -183,6 +205,7 @@ class TileAdapter extends RecyclerView.Adapter<TileAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
+        holder.itemView.setClickable(mStarted);
         int value = mValues.get(position);
         if (value == mMissingValue) {
             holder.image.setImageResource(android.R.color.black);
