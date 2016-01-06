@@ -13,9 +13,9 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.Spinner;
 
-import com.bumptech.glide.Glide;
+import com.squareup.picasso.Picasso;
 
-public class MainActivity extends AppCompatActivity implements OnImageSelectedListener {
+public class MainActivity extends AppCompatActivity {
     public static final String PREF_DIFFICULTY = "difficulty";
 
     Spinner mDifficultyPicker;
@@ -40,10 +40,9 @@ public class MainActivity extends AppCompatActivity implements OnImageSelectedLi
 
         RecyclerView imageGrid = (RecyclerView) findViewById(R.id.image_grid);
         imageGrid.setLayoutManager(new GridLayoutManager(this, 2));
-        imageGrid.setAdapter(new ImageAdapter(this, this));
+        imageGrid.setAdapter(new ImageAdapter(this));
     }
 
-    @Override
     public void onImageSelected(int imageId) {
         int[] sizes = getResources().getIntArray(R.array.difficulty_values);
         int size = sizes[mDifficultyPicker.getSelectedItemPosition()];
@@ -58,14 +57,13 @@ public class MainActivity extends AppCompatActivity implements OnImageSelectedLi
 }
 
 class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> {
-    static final int[] sImageIds = {
+    final int[] IMAGE_IDS = {
             R.raw.bruce,
             R.raw.skiing,
             R.raw.cartoon,
     };
 
-    AppCompatActivity mContext;
-    OnImageSelectedListener mListener;
+    MainActivity mContext;
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView image;
@@ -83,8 +81,7 @@ class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> {
         }
     }
 
-    ImageAdapter(AppCompatActivity context, OnImageSelectedListener listener) {
-        mListener = listener;
+    ImageAdapter(MainActivity context) {
         mContext = context;
     }
 
@@ -96,19 +93,15 @@ class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        Glide.with(mContext).load(sImageIds[position]).placeholder(android.R.color.transparent).into(holder.image);
+        Picasso.with(mContext).load(IMAGE_IDS[position]).centerCrop().resize(200, 200).placeholder(android.R.color.transparent).into(holder.image);
     }
 
     @Override
     public int getItemCount() {
-        return sImageIds.length;
+        return IMAGE_IDS.length;
     }
 
     public void onItemClicked(int position) {
-        mListener.onImageSelected(sImageIds[position]);
+        mContext.onImageSelected(IMAGE_IDS[position]);
     }
-}
-
-interface OnImageSelectedListener {
-    void onImageSelected(int position);
 }
