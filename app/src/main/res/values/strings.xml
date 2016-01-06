@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">Tile Puzzle</string>
+
+    <string name="instructions">Select an image to begin.</string>
+
+    <string name="difficulty">Difficulty</string>
+    <string-array name="difficulties">
+        <item>Easy</item>
+        <item>Medium</item>
+        <item>Hard</item>
+    </string-array>
 </resources>
