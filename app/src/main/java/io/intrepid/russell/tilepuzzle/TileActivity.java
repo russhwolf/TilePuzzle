@@ -28,6 +28,7 @@ public class TileActivity extends AppCompatActivity {
         int imageResource = getIntent().getIntExtra(EXTRA_IMAGE_RESOURCE, R.raw.bruce);
         int size = getIntent().getIntExtra(EXTRA_SIZE, 4);
 
+        // TODO this would probably be better done async
         Bitmap raw = Utils.decodeSampledBitmapFromResource(getResources(), imageResource, 500, 500); // TODO make this size real
         Bitmap[] tiles = generateTiles(raw, size);
 

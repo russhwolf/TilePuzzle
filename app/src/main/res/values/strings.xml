@@ -5,8 +5,15 @@
 
     <string name="difficulty">Difficulty</string>
     <string-array name="difficulties">
+        <item>Trivial</item>
         <item>Easy</item>
         <item>Medium</item>
         <item>Hard</item>
     </string-array>
+    <integer-array name="difficulty_values">
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+    </integer-array>
 </resources>
