@@ -1,13 +1,16 @@
 package io.intrepid.russell.tilepuzzle;
 
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -21,23 +24,56 @@ public class TileActivity extends AppCompatActivity {
 
     private RecyclerView mTileGrid;
     private TextView mStatusView;
+    private int mSize;
+    private int mImageResource;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tile);
 
-        int imageResource = getIntent().getIntExtra(EXTRA_IMAGE_RESOURCE, R.raw.bruce);
-        int size = getIntent().getIntExtra(EXTRA_SIZE, 4); // If we can't read anything, default is medium
+        mImageResource = getIntent().getIntExtra(EXTRA_IMAGE_RESOURCE, R.raw.bruce);
+        mSize = getIntent().getIntExtra(EXTRA_SIZE, 4); // If we can't read anything, default is medium
 
         mTileGrid = (RecyclerView) findViewById(R.id.tile_grid);
         mStatusView = (TextView) findViewById(R.id.status);
 
-        initializeGridAsync(imageResource, size);
+        initializeGridAsync();
     }
 
-    private void initializeGridAsync(int imageResource, int size) {
-        Log.d(TAG, "Initializing Tile Grid...");
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.tile_activity, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_reset:
+                initializeGridAsync();
+                break;
+            case R.id.menu_difficulty:
+                new AlertDialog.Builder(this)
+                        .setTitle(R.string.difficulty)
+                        .setItems(R.array.difficulties, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                int[] difficultyValues = getResources().getIntArray(R.array.difficulty_values);
+                                mSize = difficultyValues[which];
+                                initializeGridAsync();
+                            }
+                        }).create().show();
+                break;
+            case R.id.menu_exit:
+                // TODO clear any saved state once that exists
+                finish();
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void initializeGridAsync() {
         new AsyncTask<Integer, Void, TileAdapter>() {
 
             @Override
@@ -45,6 +81,7 @@ public class TileActivity extends AppCompatActivity {
                 int imageResource = params[0];
                 int size = params[1];
 
+                // TODO cache (picasso) as in MainActivity
                 Bitmap raw = Utils.decodeSampledBitmapFromResource(getResources(), imageResource, 500, 500);
                 Bitmap[] tiles = generateTiles(raw, size);
                 return new TileAdapter(size, tiles, mStatusView);
@@ -55,7 +92,7 @@ public class TileActivity extends AppCompatActivity {
                 mTileGrid.setLayoutManager(new GridLayoutManager(TileActivity.this, adapter.mSize));
                 mTileGrid.setAdapter(adapter);
             }
-        }.execute(imageResource, size);
+        }.execute(mImageResource, mSize);
 
     }
 

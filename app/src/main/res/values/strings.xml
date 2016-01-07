@@ -23,4 +23,8 @@
     </plurals>
     <string name="initializing">Initializing\u2026</string>
     <string name="solved">Puzzle complete in %d moves!</string>
+
+    <string name="menu_reset">Reset puzzle</string>
+    <string name="menu_difficulty">Change difficulty</string>
+    <string name="menu_exit">Exit</string>
 </resources>
