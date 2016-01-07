@@ -90,6 +90,7 @@ class TileAdapter extends RecyclerView.Adapter<TileAdapter.ViewHolder> {
     final Bitmap[] mTiles;
 
     boolean mStarted = false;
+    boolean mSolved = false;
 
     class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         ImageView image;
@@ -115,6 +116,7 @@ class TileAdapter extends RecyclerView.Adapter<TileAdapter.ViewHolder> {
                 int above = position - size;
                 if (mValues[above] == mMissingValue) {
                     swap(position, above);
+                    checkSolved();
                     return;
                 }
             }
@@ -123,6 +125,7 @@ class TileAdapter extends RecyclerView.Adapter<TileAdapter.ViewHolder> {
                 int below = position + size;
                 if (mValues[below] == mMissingValue) {
                     swap(position, below);
+                    checkSolved();
                     return;
                 }
             }
@@ -131,6 +134,7 @@ class TileAdapter extends RecyclerView.Adapter<TileAdapter.ViewHolder> {
                 int left = position - 1;
                 if (mValues[left] == mMissingValue) {
                     swap(position, left);
+                    checkSolved();
                     return;
                 }
             }
@@ -139,6 +143,7 @@ class TileAdapter extends RecyclerView.Adapter<TileAdapter.ViewHolder> {
                 int right = position + 1;
                 if (mValues[right] == mMissingValue) {
                     swap(position, right);
+                    checkSolved();
                     return;
                 }
             }
@@ -201,11 +206,11 @@ class TileAdapter extends RecyclerView.Adapter<TileAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         int value = mValues[position];
-        if (value == mMissingValue) {
+        if (!mSolved && value == mMissingValue) {
             holder.itemView.setClickable(false);
             holder.image.setImageResource(android.R.color.transparent);
         } else {
-            holder.itemView.setClickable(mStarted);
+            holder.itemView.setClickable(mStarted && !mSolved);
             holder.image.setImageBitmap(mTiles[value]);
         }
     }
@@ -232,6 +237,16 @@ class TileAdapter extends RecyclerView.Adapter<TileAdapter.ViewHolder> {
         if (notify) {
             notifyDataSetChanged();
         }
+    }
+
+    private void checkSolved() {
+        for (int i = 0; i < mValues.length; i++) {
+            int value = mValues[i];
+            if (value != i) {
+                return;
+            }
+        }
+        mSolved = true;
     }
 
 }
