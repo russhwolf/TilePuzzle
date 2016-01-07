@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 public class TileActivity extends AppCompatActivity {
     private static final String TAG = TileActivity.class.getSimpleName();
@@ -19,6 +20,7 @@ public class TileActivity extends AppCompatActivity {
     public static final String EXTRA_SIZE = "size";
 
     private RecyclerView mTileGrid;
+    private TextView mStatusView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +31,7 @@ public class TileActivity extends AppCompatActivity {
         int size = getIntent().getIntExtra(EXTRA_SIZE, 4); // If we can't read anything, default is medium
 
         mTileGrid = (RecyclerView) findViewById(R.id.tile_grid);
+        mStatusView = (TextView) findViewById(R.id.status);
 
         initializeGridAsync(imageResource, size);
     }
@@ -44,7 +47,7 @@ public class TileActivity extends AppCompatActivity {
 
                 Bitmap raw = Utils.decodeSampledBitmapFromResource(getResources(), imageResource, 500, 500);
                 Bitmap[] tiles = generateTiles(raw, size);
-                return new TileAdapter(size, tiles);
+                return new TileAdapter(size, tiles, mStatusView);
             }
 
             @Override
@@ -88,9 +91,11 @@ class TileAdapter extends RecyclerView.Adapter<TileAdapter.ViewHolder> {
     final int mSize;
     final int[] mValues;
     final Bitmap[] mTiles;
+    final TextView mStatusView;
 
     boolean mStarted = false;
     boolean mSolved = false;
+    int mMoves = 0;
 
     class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         ImageView image;
@@ -116,7 +121,6 @@ class TileAdapter extends RecyclerView.Adapter<TileAdapter.ViewHolder> {
                 int above = position - size;
                 if (mValues[above] == mMissingValue) {
                     swap(position, above);
-                    checkSolved();
                     return;
                 }
             }
@@ -125,7 +129,6 @@ class TileAdapter extends RecyclerView.Adapter<TileAdapter.ViewHolder> {
                 int below = position + size;
                 if (mValues[below] == mMissingValue) {
                     swap(position, below);
-                    checkSolved();
                     return;
                 }
             }
@@ -134,7 +137,6 @@ class TileAdapter extends RecyclerView.Adapter<TileAdapter.ViewHolder> {
                 int left = position - 1;
                 if (mValues[left] == mMissingValue) {
                     swap(position, left);
-                    checkSolved();
                     return;
                 }
             }
@@ -143,7 +145,6 @@ class TileAdapter extends RecyclerView.Adapter<TileAdapter.ViewHolder> {
                 int right = position + 1;
                 if (mValues[right] == mMissingValue) {
                     swap(position, right);
-                    checkSolved();
                     return;
                 }
             }
@@ -151,7 +152,7 @@ class TileAdapter extends RecyclerView.Adapter<TileAdapter.ViewHolder> {
         }
     }
 
-    TileAdapter(int size, Bitmap[] tiles) {
+    TileAdapter(int size, Bitmap[] tiles, TextView statusView) {
         setHasStableIds(true); // This gives us animation when moving tiles
 
         mSize = size;
@@ -163,6 +164,8 @@ class TileAdapter extends RecyclerView.Adapter<TileAdapter.ViewHolder> {
 
         mMissingValue = size * size - 1;
 
+        mStatusView = statusView;
+
         new AsyncTask<Integer, Void, Void>() {
             @Override
             protected Void doInBackground(Integer... params) {
@@ -173,25 +176,14 @@ class TileAdapter extends RecyclerView.Adapter<TileAdapter.ViewHolder> {
                     e.printStackTrace();
                 }
 
-                // TODO it would be nice to do this randomly and check if the shuffle is valid
-                // However the math for this is a pain.
-                int numTiles = mValues.length - 1; // Not including empty!
-                for (int i = 0; i < numTiles; i++) {
-                    int newValue = numTiles - 1 - i;
-                    if (newValue < 0) {
-                        newValue += numTiles;
-                    }
-                    mValues[i] = newValue;
-                }
-                if (mSize % 2 == 0) {
-                    swap(numTiles - 2, numTiles - 1, false);
-                }
+                initializePuzzle();
                 return null;
             }
 
             @Override
             protected void onPostExecute(Void result) {
                 mStarted = true;
+                mStatusView.setText(mStatusView.getResources().getQuantityString(R.plurals.moves, mMoves, mMoves));
                 notifyDataSetChanged();
             }
         }.execute(1);
@@ -229,13 +221,23 @@ class TileAdapter extends RecyclerView.Adapter<TileAdapter.ViewHolder> {
         swap(position1, position2, true);
     }
 
-    private void swap(int position1, int position2, boolean notify) {
+    /**
+     * @param click true if this was called from user interaction rather than during initialization
+     */
+    private void swap(int position1, int position2, boolean click) {
         int value1 = mValues[position1];
         int value2 = mValues[position2];
         mValues[position1] = value2;
         mValues[position2] = value1;
-        if (notify) {
+        if (click) {
             notifyDataSetChanged();
+            checkSolved();
+            mMoves++;
+            if (mSolved) {
+                mStatusView.setText(mStatusView.getResources().getString(R.string.solved, mMoves));
+            } else {
+                mStatusView.setText(mStatusView.getResources().getQuantityString(R.plurals.moves, mMoves, mMoves));
+            }
         }
     }
 
@@ -247,6 +249,27 @@ class TileAdapter extends RecyclerView.Adapter<TileAdapter.ViewHolder> {
             }
         }
         mSolved = true;
+        notifyDataSetChanged();
+    }
+
+    private void initializePuzzle() {
+        mMoves = 0;
+
+        // TODO it would be nice to do this randomly and check if the shuffle is valid
+        // However the math for this is a pain. Instead we just reverse order and do
+        // one more swap if necessary based on parity.
+        int numTiles = mValues.length - 1; // Not including empty!
+        for (int i = 0; i < numTiles; i++) {
+            int newValue = numTiles - 1 - i;
+            if (newValue < 0) {
+                newValue += numTiles;
+            }
+            mValues[i] = newValue;
+        }
+        if (mSize % 2 == 0) {
+            swap(numTiles - 2, numTiles - 1, false);
+        }
+
     }
 
 }

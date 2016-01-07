@@ -16,4 +16,11 @@
         <item>4</item>
         <item>5</item>
     </integer-array>
+
+    <plurals name="moves">
+        <item quantity="one">%d move</item>
+        <item quantity="other">%d moves</item>
+    </plurals>
+    <string name="initializing">Initializing\u2026</string>
+    <string name="solved">Puzzle complete in %d moves!</string>
 </resources>
