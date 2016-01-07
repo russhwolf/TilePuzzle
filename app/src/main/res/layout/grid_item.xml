@@ -2,7 +2,9 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:foreground="?selectableItemBackground">
+    android:foreground="?selectableItemBackground"
+    android:padding="@dimen/tile_border_width"
+    android:background="@android:color/black">
 
     <ImageView
         android:id="@+id/image"

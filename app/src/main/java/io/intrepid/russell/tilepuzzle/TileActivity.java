@@ -237,9 +237,11 @@ class TileAdapter extends RecyclerView.Adapter<TileAdapter.ViewHolder> {
         int value = mValues[position];
         if (!mSolved && value == mMissingValue) {
             holder.itemView.setClickable(false);
+            holder.itemView.setBackgroundColor(0x00000000);
             holder.image.setImageResource(android.R.color.transparent);
         } else {
             holder.itemView.setClickable(mStarted && !mSolved);
+            holder.itemView.setBackgroundColor(0xff000000);
             holder.image.setImageBitmap(mTiles[value]);
         }
     }
