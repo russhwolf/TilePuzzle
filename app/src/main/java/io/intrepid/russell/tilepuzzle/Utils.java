@@ -5,6 +5,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
 public class Utils {
+    public static final String PREF_DIFFICULTY = "difficulty";
+
     private Utils() {
     }
 

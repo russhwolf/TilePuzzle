@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:foreground="?selectableItemBackground"
     android:padding="@dimen/tile_border_width"
-    android:background="@android:color/black">
+    android:background="@color/tile_border">
 
     <ImageView
         android:id="@+id/image"

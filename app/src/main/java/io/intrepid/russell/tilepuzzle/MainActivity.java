@@ -16,20 +16,25 @@ import android.widget.Spinner;
 import com.squareup.picasso.Picasso;
 
 public class MainActivity extends AppCompatActivity {
-    public static final String PREF_DIFFICULTY = "difficulty";
 
     Spinner mDifficultyPicker;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (TileActivity.hasSaveData(this)) {
+            // If we have saved data, launch immediately into TileActivity
+            startActivity(new Intent(this, TileActivity.class));
+            finish();
+        }
+
         setContentView(R.layout.activity_main);
 
         mDifficultyPicker = (Spinner) findViewById(R.id.difficulty);
-        mDifficultyPicker.setSelection(PreferenceManager.getDefaultSharedPreferences(this).getInt(PREF_DIFFICULTY, 1));
+        mDifficultyPicker.setSelection(PreferenceManager.getDefaultSharedPreferences(this).getInt(Utils.PREF_DIFFICULTY, 1));
         mDifficultyPicker.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                PreferenceManager.getDefaultSharedPreferences(MainActivity.this).edit().putInt(PREF_DIFFICULTY, position).apply();
+                PreferenceManager.getDefaultSharedPreferences(MainActivity.this).edit().putInt(Utils.PREF_DIFFICULTY, position).apply();
             }
 
             @Override
@@ -48,9 +53,11 @@ public class MainActivity extends AppCompatActivity {
         int size = sizes[mDifficultyPicker.getSelectedItemPosition()];
 
         startActivity(new Intent(this, TileActivity.class)
-                        .putExtra(TileActivity.EXTRA_SIZE, size)
-                        .putExtra(TileActivity.EXTRA_IMAGE_RESOURCE, imageId)
+                        .putExtra(TileActivity.KEY_SIZE, size)
+                        .putExtra(TileActivity.KEY_IMAGE_RESOURCE, imageId)
         );
+        TileActivity.clearSaveData(this);
+        finish();
     }
 
 
@@ -93,7 +100,7 @@ class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        Picasso.with(mContext).load(IMAGE_IDS[position]).centerCrop().resize(200, 200).placeholder(android.R.color.transparent).into(holder.image);
+        Picasso.with(mContext).load(IMAGE_IDS[position]).centerCrop().fit().placeholder(android.R.color.transparent).into(holder.image);
     }
 
     @Override
